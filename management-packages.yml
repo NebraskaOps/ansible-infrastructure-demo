@@ -1,0 +1,24 @@
+---
+- name: Install packages on management servers
+  hosts: management_servers
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+    - name: Ensure Cache is up to date
+      apt:
+        update_cache: yes
+    - name: Ensure VIM is at the latest version
+      apt:
+        name: vim
+        state: latest
+    - name: Ensure NTP is at the latest version
+      apt:
+        name: ntp
+        state: latest
+    - name: Make sure ntp is started and enabled
+      service:
+        name: ntp
+        state: started
+        enabled: yes

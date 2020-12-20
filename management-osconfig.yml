@@ -1,0 +1,11 @@
+---
+- name: Base Management Server Configuration
+  hosts: management_servers
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+    - name: Set timezone to Central time
+      community.general.timezone:
+        name: America/Chicago
