@@ -8,4 +8,4 @@
   tasks:
     - name: Set timezone to Central time
       community.general.timezone:
-        name: Amercia/Chicago
+        name: America/Chicago
