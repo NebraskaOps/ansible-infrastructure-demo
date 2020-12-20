@@ -1,0 +1,8 @@
+---
+management_servers:
+  hosts:
+    localhost:
+      vars:
+        ansible_connection: local
+home_lab:
+  children: management_servers
