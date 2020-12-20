@@ -2,7 +2,6 @@
 management_servers:
   hosts:
     localhost:
-      host_var:
-        ansible_connection: local
+      ansible_connection: local
 home_lab:
   children: management_servers
