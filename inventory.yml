@@ -3,5 +3,19 @@ management_servers:
   hosts:
     localhost:
       ansible_connection: local
+domain_controller_servers:
+  hosts:
+    omnodc01v:
+      ansible_host: 192.168.234.20
+    omnodc02v:
+      ansible_host: 192.168.234.21
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_transport: credssp
+    ansible_port: 5986
+    ansible_winrm_server_cert_validation: ignore
+
 home_lab:
-  children: management_servers
+  children:
+    management_servers:
+    domain_controller_servers:
