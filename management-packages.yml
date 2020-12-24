@@ -13,6 +13,10 @@
       apt:
         name: vim
         state: latest
+    - name: Ensure python3-pip at the latest version
+      apt:
+        name: python3-pip
+        state: latest
     - name: Ensure NTP is at the latest version
       apt:
         name: ntp
