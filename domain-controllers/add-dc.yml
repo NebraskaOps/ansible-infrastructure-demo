@@ -3,7 +3,6 @@
   hosts: domain_controller_servers
   vars:
     dc_address: 192.168.234.100
-    dc_hostname: "omnodc01v"
     domain_name: "lab.nebraskaops.net"
     netbios_name: "LAB"
     domain_mode: "winthreshold" # Windows Server 2016 (Also used for 2019)
@@ -13,7 +12,7 @@
     sysvol_folder: "D:\\SYSVOL"
     database_folder: "D:\\NTDS"
     log_folder: "D:\\NTDS"
-  gather_facts: no
+  gather_facts: yes
   tasks:
     - name: Set Password
       win_user:
@@ -47,7 +46,7 @@
       tags: disable_firewall
     - name: Change the hostname
       win_hostname:
-        name: "{{ dc_hostname }}"
+        name: "{{ ansible_hostname }}"
       register: res
     - name: Reboot
       win_reboot:
