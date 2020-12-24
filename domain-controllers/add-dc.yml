@@ -71,8 +71,8 @@
       register: ad
     - name: reboot server
       win_reboot:
-      msg: "Installing AD. Rebooting..."
-      pre_reboot_delay: 15
+        msg: "Installing AD. Rebooting..."
+        pre_reboot_delay: 15
       when: ad.changed
     - name: Set internal DNS server
       win_dns_client:
