@@ -1,0 +1,3 @@
+---
+- name: Base Domain Controller Configuration
+  hosts: domain_controller_servers

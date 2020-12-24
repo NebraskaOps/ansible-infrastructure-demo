@@ -1,0 +1,87 @@
+---
+- name: Base Domain Controller Configuration
+  hosts: domain_controller_servers
+  vars:
+    dc_address: 192.168.234.100
+    dc_hostname: "omnodc01v"
+    domain_name: "lab.nebraskaops.net"
+    netbios_name: "LAB"
+    domain_mode: "winthreshold" # Windows Server 2016 (Also used for 2019)
+    upstream_dns_1: 1.1.1.1
+    upstream_dns_2: 1.0.0.1
+    ntp_servers: "0.us.pool.ntp.org,1.us.pool.ntp.org"
+    sysvol_folder: "D:\\SYSVOL"
+    database_folder: "D:\\NTDS"
+    log_folder: "D:\\NTDS"
+  gather_facts: no
+  tasks:
+    - name: Set Password
+      win_user:
+        name: administrator
+        password: "{{ dc_password }}"
+        state: present
+      ignore_errors: True
+    - name: Set upstream DNS server
+      win_dns_client:
+        adapter_names: "*"
+        ipv4_addresses:
+          - "{{ upstream_dns_1 }}"
+          - "{{ upstream_dns_2 }}"
+    - name: Stop the time service
+      win_service:
+        name: w32time
+        state: stopped
+    - name: Set NTP Servers
+      win_shell: 'w32tm /config /syncfromflags:manual /manualpeerlist:"{{ntp_servers}}"'
+    - name: Start the time service
+      win_service:
+        name: w32time
+        state: started
+    - name: Disable firewall for Domain, Public and Private profiles
+      win_firewall:
+        state: disabled
+        profiles:
+          - Domain
+          - Private
+          - Public
+      tags: disable_firewall
+    - name: Change the hostname
+      win_hostname:
+        name: "{{ dc_hostname }}"
+      register: res
+    - name: Reboot
+      win_reboot:
+      when: res.reboot_required
+    - name: Install Active Directory
+      win_feature: >
+        name=AD-Domain-Services
+        include_management_tools=yes
+        include_sub_features=yes
+        state=present
+      register: result
+    - name: Create Domain
+      ansible.windows.win_domain:
+        dns_domain_name: "{{ domain_name }}"
+        domain_netbios_name: "{{ netbios_name }}"
+        domain_mode: "{{ domain_mode }}"
+        safe_mode_password: "{{ recovery_password }}"
+        sysvol_path: "{{ sysvol_folder }}"
+        database_path: "{{ database_folder }}"
+        log_path: "{{ log_folder }}"
+      register: ad
+    - name: reboot server
+      win_reboot:
+      msg: "Installing AD. Rebooting..."
+      pre_reboot_delay: 15
+      when: ad.changed
+    - name: Set internal DNS server
+      win_dns_client:
+        adapter_names: "*"
+        ipv4_addresses:
+          - "127.0.0.1"
+    - name: Enable RDP Server
+      ansible.windows.win_regedit:
+        path: HKLM:\SYSTEM\CurentControlSet\Control\Terminal Server
+        name: fDenyTSConnections
+        type: dword
+        data: 0
